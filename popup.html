@@ -66,6 +66,30 @@
     .toggle-btn.disabled:hover {
       background: #c82333;
     }
+    
+    .options-section {
+      margin-top: 15px;
+      text-align: center;
+    }
+    
+    .options-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .options-btn:hover {
+      background: #218838;
+    }
+    
+    .feature-list {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
   </style>
 </head>
 <body>
@@ -86,11 +110,18 @@
     This extension forces Claude.ai to use clean sans-serif fonts instead of serif fonts for better readability.
     <br><br>
     <strong>Features:</strong>
-    <ul style="margin: 10px 0; padding-left: 20px;">
+    <ul class="feature-list">
       <li>Automatic font replacement</li>
       <li>Works with dynamic content</li>
       <li>System font fallbacks</li>
+      <li>Advanced customization options</li>
     </ul>
+    
+    <div class="options-section">
+      <button id="openOptions" class="options-btn">
+        ⚙️ Advanced Options
+      </button>
+    </div>
   </div>
   
   <script src="popup.js"></script>

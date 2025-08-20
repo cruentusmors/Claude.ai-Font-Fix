@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   const toggleBtn = document.getElementById('toggleBtn');
   const status = document.getElementById('status');
+  const openOptionsBtn = document.getElementById('openOptions');
   
   // Load current state
   chrome.storage.sync.get(['fontFixEnabled'], function(result) {
@@ -19,6 +20,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Remove the page reload - content script will handle the change in real-time
       });
     });
+  });
+  
+  // Options button click handler
+  openOptionsBtn.addEventListener('click', function() {
+    chrome.runtime.openOptionsPage();
   });
   
   function updateUI(isEnabled) {
