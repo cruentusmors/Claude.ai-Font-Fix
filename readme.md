@@ -11,7 +11,7 @@ Claude.ai uses serif fonts by default for AI responses, which can be harder to r
 - **Automatic Font Replacement**: Instantly converts serif fonts to sans-serif
 - **System Font Integration**: Uses your system's native fonts for optimal rendering
 - **Dynamic Content Support**: Works with new messages as they appear
-- **Real-time Toggle Control**: Instant enable/disable without page reload
+- **Toggle Control**: Easy enable/disable through extension popup with automatic page reload
 - **Lightweight**: Minimal performance impact
 - **Persistent Settings**: Remembers your preferences across sessions
 - **Debug Support**: Console logging for troubleshooting
@@ -34,7 +34,7 @@ Claude.ai uses serif fonts by default for AI responses, which can be harder to r
 1. **Navigate to Claude.ai** - The extension automatically activates on Claude.ai
 2. **View improved fonts** - Serif fonts are automatically replaced with sans-serif
 3. **Toggle if needed** - Click the extension icon to enable/disable the font fix
-4. **Real-time changes** - Toggle takes effect immediately without needing a page reload
+4. **Page reload on toggle** - The page automatically reloads when you toggle the extension to apply changes
 
 ## 🛠️ How It Works
 
@@ -43,7 +43,7 @@ The extension uses multiple approaches to ensure complete font coverage:
 - **CSS Variables Override**: Replaces Claude's custom CSS variables
 - **Class-based Targeting**: Targets specific font classes like `.font-serif`
 - **Dynamic Content Script**: Adds and removes font styles based on user preferences
-- **Real-time Toggle**: Instantly applies/removes styles without page reload
+- **Automatic Page Reload**: Reloads the page when toggling to ensure clean state
 - **MutationObserver**: Monitors for new content and applies fonts automatically
 - **Direct Element Styling**: Applies styles directly to elements for immediate effect
 - **Prose Element Targeting**: Ensures all text content is affected
