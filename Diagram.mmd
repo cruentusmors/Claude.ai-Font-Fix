@@ -1,37 +1,60 @@
 ---
-query: make a cool diagram for my chrome extension
-generationTime: 2025-08-20T04:31:03.073Z
+query: "update #file:Diagram.mmd to reflect the current state of this chrome
+  extension"
+references:
+  - "File: /Diagram.mmd"
+generationTime: 2025-08-20T17:26:36.600Z
 ---
 flowchart TB
-    User([👤 User]) --> Popup[🎨 Popup UI]
-    User --> ContentScript[📄 Content Script]
+    User([👤 User]) --> Browser{🌐 Chrome Browser}
     
-    Popup --> Background[⚙️ Background Script]
-    ContentScript --> Background
+    Browser --> Popup[🎨 Extension Popup]
+    Browser --> ContentScript[📄 Content Script]
+    Browser --> Background[⚙️ Background/Service Worker]
     
-    Background --> Storage[(💾 Chrome Storage)]
-    Background --> Permissions[🔐 Permissions]
-    Background --> APIs[🌐 Chrome APIs]
+    subgraph "Extension Core"
+        Popup --> |User Interactions| Background
+        ContentScript --> |DOM Events| Background
+        Background --> |State Management| Storage[(💾 Chrome Storage)]
+        Background --> |API Calls| ChromeAPIs[🔧 Chrome APIs]
+    end
     
-    ContentScript --> DOM[🌍 Web Page DOM]
-    ContentScript --> Inject[💉 Script Injection]
+    subgraph "Web Page Integration"
+        ContentScript --> |Inject/Modify| DOM[🌍 Page DOM]
+        ContentScript --> |Script Injection| PageScripts[💉 Injected Scripts]
+        DOM --> |Font Detection| FontAnalysis[🔍 Font Analysis]
+    end
     
-    Background --> Notifications[🔔 Notifications]
-    Background --> ContextMenu[📋 Context Menu]
-    Background --> WebRequest[🌐 Web Requests]
+    subgraph "Chrome APIs & Permissions"
+        ChromeAPIs --> Tabs[📑 Tabs API]
+        ChromeAPIs --> ActiveTab[🎯 Active Tab]
+        ChromeAPIs --> Host[🌐 Host Permissions]
+        ChromeAPIs --> Scripting[⚡ Scripting API]
+    end
     
-    APIs --> Tabs[📑 Tabs API]
-    APIs --> Bookmarks[⭐ Bookmarks API]
-    APIs --> History[📚 History API]
+    subgraph "Storage & Settings"
+        Storage --> Local[📂 Local Storage]
+        Storage --> Sync[☁️ Sync Storage]
+        Local --> Settings[⚙️ User Settings]
+        Sync --> Preferences[📋 User Preferences]
+    end
     
-    Storage --> Local[📂 Local Storage]
-    Storage --> Sync[☁️ Sync Storage]
+    subgraph "Font Processing"
+        FontAnalysis --> FontDetection[🔤 Font Detection]
+        FontDetection --> FontReplacement[🔄 Font Replacement]
+        FontReplacement --> CSSInjection[💅 CSS Injection]
+    end
     
-    Popup -.-> Options[⚙️ Options Page]
-    Background -.-> DevTools[🔧 DevTools]
+    Background --> |Notifications| Notifications[🔔 User Notifications]
+    Background --> |Context Menu| ContextMenu[📋 Right-click Menu]
     
-    style Background fill:#4285f4
-    style Popup fill:#ea4335
-    style ContentScript fill:#34a853
-    style Storage fill:#fbbc04
-    style User fill:#9aa0a6
+    Popup -.-> |Opens| Options[⚙️ Options Page]
+    Background -.-> |Debug Info| DevTools[🔧 Developer Tools]
+    
+    %% Data Flow Connections
+    User --> |Clicks Extension| Popup
+    User --> |Right-clicks| ContextMenu
+    User --> |Browses Web| DOM
+    
+    Settings --> |Configure| FontReplacement
+    Preferences --> |Sync Across Devices| FontReplacement
