@@ -25,6 +25,7 @@
     "default_popup": "popup.html",
     "default_title": "Claude Font Fix"
   },
+  "options_page": "options.html",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",

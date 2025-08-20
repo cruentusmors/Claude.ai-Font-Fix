@@ -66,6 +66,161 @@
     .toggle-btn.disabled:hover {
       background: #c82333;
     }
+    
+    .options-section {
+      margin-top: 15px;
+      text-align: center;
+    }
+    
+    .options-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .options-btn:hover {
+      background: #218838;
+    }
+    
+    .feature-list {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    
+    .performance-info {
+      font-size: 11px;
+      color: #666;
+      margin-top: 10px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .performance-info strong {
+      color: #495057;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .usage-stats {
+      margin: 15px 0;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .stats-header {
+      font-weight: bold;
+      color: #495057;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    
+    .stat-label {
+      color: #6c757d;
+    }
+    
+    .stat-value {
+      font-weight: bold;
+      color: #007bff;
+    }
+    
+    .feedback-section {
+      margin: 15px 0;
+      padding: 12px;
+      background: linear-gradient(135deg, #fff5f5 0%, #f0f9ff 100%);
+      border-radius: 6px;
+      border: 1px solid #e3f2fd;
+    }
+    
+    .feedback-header {
+      font-weight: bold;
+      color: #495057;
+      margin-bottom: 10px;
+      font-size: 13px;
+      text-align: center;
+    }
+    
+    .feedback-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .feedback-buttons:last-child {
+      margin-bottom: 0;
+    }
+    
+    .feedback-btn {
+      flex: 1;
+      padding: 8px 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .rate-btn {
+      background: #ffc107;
+      color: #212529;
+    }
+    
+    .rate-btn:hover {
+      background: #e0a800;
+      transform: translateY(-1px);
+    }
+    
+    .feedback-btn.feedback-btn {
+      background: #17a2b8;
+      color: white;
+    }
+    
+    .feedback-btn.feedback-btn:hover {
+      background: #138496;
+      transform: translateY(-1px);
+    }
+    
+    .share-btn {
+      background: #28a745;
+      color: white;
+    }
+    
+    .share-btn:hover {
+      background: #218838;
+      transform: translateY(-1px);
+    }
+    
+    .donate-btn {
+      background: #fd7e14;
+      color: white;
+    }
+    
+    .donate-btn:hover {
+      background: #e66100;
+      transform: translateY(-1px);
+    }
   </style>
 </head>
 <body>
@@ -86,11 +241,65 @@
     This extension forces Claude.ai to use clean sans-serif fonts instead of serif fonts for better readability.
     <br><br>
     <strong>Features:</strong>
-    <ul style="margin: 10px 0; padding-left: 20px;">
+    <ul class="feature-list">
       <li>Automatic font replacement</li>
       <li>Works with dynamic content</li>
       <li>System font fallbacks</li>
+      <li>Advanced customization options</li>
     </ul>
+    
+    <div class="options-section">
+      <button id="openOptions" class="options-btn">
+        ⚙️ Advanced Options
+      </button>
+    </div>
+    
+    <div class="usage-stats" id="usageStats">
+      <div class="stats-header">📊 Usage Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Pages Enhanced:</span>
+          <span class="stat-value" id="pagesCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Elements Fixed:</span>
+          <span class="stat-value" id="elementsCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Days Active:</span>
+          <span class="stat-value" id="daysActive">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Cache Hit Rate:</span>
+          <span class="stat-value" id="cacheHitRate">0%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="feedback-section">
+      <div class="feedback-header">💝 Enjoying the extension?</div>
+      <div class="feedback-buttons">
+        <button id="rateBtn" class="feedback-btn rate-btn">
+          ⭐ Rate on Store
+        </button>
+        <button id="feedbackBtn" class="feedback-btn feedback-btn">
+          📝 Send Feedback
+        </button>
+      </div>
+      <div class="feedback-buttons">
+        <button id="shareBtn" class="feedback-btn share-btn">
+          🔗 Share Extension
+        </button>
+        <button id="donateBtn" class="feedback-btn donate-btn">
+          ☕ Buy Me Coffee
+        </button>
+      </div>
+    </div>
+    
+    <div class="performance-info hidden" id="performanceInfo">
+      <strong>Performance Stats:</strong><br>
+      <span id="perfStats">Loading...</span>
+    </div>
   </div>
   
   <script src="popup.js"></script>
