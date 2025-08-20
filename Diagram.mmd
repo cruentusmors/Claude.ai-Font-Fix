@@ -1,0 +1,37 @@
+---
+query: make a cool diagram for my chrome extension
+generationTime: 2025-08-20T04:31:03.073Z
+---
+flowchart TB
+    User([👤 User]) --> Popup[🎨 Popup UI]
+    User --> ContentScript[📄 Content Script]
+    
+    Popup --> Background[⚙️ Background Script]
+    ContentScript --> Background
+    
+    Background --> Storage[(💾 Chrome Storage)]
+    Background --> Permissions[🔐 Permissions]
+    Background --> APIs[🌐 Chrome APIs]
+    
+    ContentScript --> DOM[🌍 Web Page DOM]
+    ContentScript --> Inject[💉 Script Injection]
+    
+    Background --> Notifications[🔔 Notifications]
+    Background --> ContextMenu[📋 Context Menu]
+    Background --> WebRequest[🌐 Web Requests]
+    
+    APIs --> Tabs[📑 Tabs API]
+    APIs --> Bookmarks[⭐ Bookmarks API]
+    APIs --> History[📚 History API]
+    
+    Storage --> Local[📂 Local Storage]
+    Storage --> Sync[☁️ Sync Storage]
+    
+    Popup -.-> Options[⚙️ Options Page]
+    Background -.-> DevTools[🔧 DevTools]
+    
+    style Background fill:#4285f4
+    style Popup fill:#ea4335
+    style ContentScript fill:#34a853
+    style Storage fill:#fbbc04
+    style User fill:#9aa0a6
