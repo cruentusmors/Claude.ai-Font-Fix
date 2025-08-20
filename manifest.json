@@ -15,9 +15,6 @@
       "matches": [
         "https://claude.ai/*"
       ],
-      "css": [
-        "styles.css"
-      ],
       "js": [
         "content.js"
       ],
