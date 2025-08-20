@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error saving settings:', chrome.runtime.lastError);
         showNotification('❌ Error saving settings', 'error');
       } else {
-        console.log('Advanced settings saved:', settings);
+        debugLog('Advanced settings saved:', settings);
         showNotification('✅ Settings saved!', 'success');
         
         // Notify content script of changes
@@ -232,8 +232,9 @@ document.addEventListener('DOMContentLoaded', function() {
             chrome.tabs.sendMessage(tab.id, {
               type: 'SETTINGS_UPDATED',
               settings: settings
-            }).catch(() => {
+            }).catch((error) => {
               // Ignore errors for tabs that don't have the content script
+              debugLog('Claude Font Fix: Could not send message to tab', tab.id, error);
             });
           });
         });
@@ -367,5 +368,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  console.log('Claude Font Fix Options page loaded successfully');
+  debugLog('Claude Font Fix Options page loaded successfully');
 });

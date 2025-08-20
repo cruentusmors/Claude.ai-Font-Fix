@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.storage.sync.get(['fontFixEnabled'], function(result) {
     // Handle potential storage errors
     if (chrome.runtime.lastError) {
-      console.log('Claude Font Fix: Storage access error, using defaults');
+      debugLog('Claude Font Fix: Storage access error, using defaults');
       updateUI(true); // Default to enabled
       return;
     }
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleBtn.addEventListener('click', function() {
     chrome.storage.sync.get(['fontFixEnabled'], function(result) {
       if (chrome.runtime.lastError) {
-        console.log('Claude Font Fix: Storage access error during toggle');
+        debugLog('Claude Font Fix: Storage access error during toggle');
         return;
       }
       
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       chrome.storage.sync.set({fontFixEnabled: newState}, function() {
         if (chrome.runtime.lastError) {
-          console.log('Claude Font Fix: Storage write error');
+          debugLog('Claude Font Fix: Storage write error');
           return;
         }
         
@@ -67,8 +67,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Feedback button handlers
   rateBtn.addEventListener('click', function() {
+    // Check if extension ID is available
+    if (!CONFIG.EXTENSION_ID) {
+      showNotification('Extension not yet published to Chrome Web Store. Please try again later.');
+      trackEvent('rate_clicked_no_id');
+      return;
+    }
+    
     chrome.tabs.create({
-      url: 'https://chromewebstore.google.com/detail/claude-font-fix/[EXTENSION-ID-HERE]'
+      url: `https://chromewebstore.google.com/detail/claude-font-fix/${CONFIG.EXTENSION_ID}`
     });
     trackEvent('rate_clicked');
     updateFeedbackEngagement('rated');
@@ -83,8 +90,15 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   shareBtn.addEventListener('click', function() {
+    // Check if extension ID is available
+    if (!CONFIG.EXTENSION_ID) {
+      showNotification('Extension not yet published to Chrome Web Store. Please try again later.');
+      trackEvent('share_clicked_no_id');
+      return;
+    }
+    
     // Copy extension URL to clipboard
-    const extensionUrl = 'https://chromewebstore.google.com/detail/claude-font-fix/[EXTENSION-ID-HERE]';
+    const extensionUrl = `https://chromewebstore.google.com/detail/claude-font-fix/${CONFIG.EXTENSION_ID}`;
     navigator.clipboard.writeText(extensionUrl).then(() => {
       showNotification('Extension URL copied to clipboard!');
     });
@@ -107,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.tabs.sendMessage(tabs[0].id, {type: 'GET_PERFORMANCE_METRICS'}, function(response) {
           // Handle chrome.runtime.lastError to prevent unchecked runtime error
           if (chrome.runtime.lastError) {
-            console.log('Claude Font Fix: Content script not available on this tab');
+            debugLog('Claude Font Fix: Content script not available on this tab');
             return;
           }
           
@@ -204,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       chrome.storage.local.set({usageAnalytics: analytics});
       
-      console.log(`Claude Font Fix: Event tracked - ${eventName}`, data);
+      debugLog(`Claude Font Fix: Event tracked - ${eventName}`, data);
     });
   }
 
