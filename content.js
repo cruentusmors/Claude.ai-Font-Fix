@@ -154,7 +154,7 @@
       
       // Only log if significant processing occurred or every 10th update
       if (elementsProcessed > 10 || performanceMetrics.elementsProcessed % 100 === 0) {
-        console.log(`Claude Font Fix: Processed ${elementsProcessed} elements in ${updateTime.toFixed(2)}ms (Total: ${performanceMetrics.elementsProcessed})`);
+        debugLog(`Claude Font Fix: Processed ${elementsProcessed} elements in ${updateTime.toFixed(2)}ms (Total: ${performanceMetrics.elementsProcessed})`);
       }
       
       rafId = null;
@@ -282,7 +282,9 @@
     if (settings.fontSize !== 1.0) {
       // Use rem units instead of em to prevent compounding
       cssRules += `\n        font-size: ${settings.fontSize}rem !important;`;
-      console.log(`Claude Font Fix: Applying font size ${settings.fontSize}rem (${Math.round(settings.fontSize * 100)}%)`);
+      if (CONFIG && CONFIG.DEBUG) {
+        console.log(`Claude Font Fix: Applying font size ${settings.fontSize}rem (${Math.round(settings.fontSize * 100)}%)`);
+      }
     }
     if (settings.lineHeight !== 1.5) {
       cssRules += `\n        line-height: ${settings.lineHeight} !important;`;
@@ -338,7 +340,9 @@
     document.head.appendChild(style);
     
     // Debug: Log the complete CSS being applied
-    console.log('Claude Font Fix: Complete CSS applied:', cssRules);
+    if (CONFIG && CONFIG.DEBUG) {
+      console.log('Claude Font Fix: Complete CSS applied:', cssRules);
+    }
     
     // Also apply to any existing elements immediately
     optimizedApplyToElements();
@@ -424,7 +428,7 @@
         window.fontFixTimeout = setTimeout(() => {
           // Only process if we have significant changes
           if (newElements.size > 5) {
-            console.log(`Claude Font Fix: Processing ${newElements.size} new elements`);
+            debugLog(`Claude Font Fix: Processing ${newElements.size} new elements`);
             
             // Add new elements to intersection observer
             newElements.forEach(element => {
@@ -537,8 +541,8 @@
       fontFixEnabled = result.fontFixEnabled !== false; // Default to true
       advancedSettings = result.advancedSettings || defaultAdvancedSettings;
       
-      console.log('Claude Font Fix: Extension enabled =', fontFixEnabled);
-      console.log('Claude Font Fix: Advanced settings =', advancedSettings);
+      debugLog('Claude Font Fix: Extension enabled =', fontFixEnabled);
+      debugLog('Claude Font Fix: Advanced settings =', advancedSettings);
       applyFontFix();
     });
   }
@@ -549,13 +553,13 @@
     
     if (changes.fontFixEnabled) {
       fontFixEnabled = changes.fontFixEnabled.newValue !== false;
-      console.log('Claude Font Fix: Extension toggled to', fontFixEnabled);
+      debugLog('Claude Font Fix: Extension toggled to', fontFixEnabled);
       shouldUpdate = true;
     }
     
     if (changes.advancedSettings) {
       advancedSettings = changes.advancedSettings.newValue || defaultAdvancedSettings;
-      console.log('Claude Font Fix: Advanced settings updated', advancedSettings);
+      debugLog('Claude Font Fix: Advanced settings updated', advancedSettings);
       shouldUpdate = true;
     }
     
@@ -571,7 +575,7 @@
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.type === 'SETTINGS_UPDATED') {
       advancedSettings = request.settings || defaultAdvancedSettings;
-      console.log('Claude Font Fix: Settings updated via message', advancedSettings);
+      debugLog('Claude Font Fix: Settings updated via message', advancedSettings);
       
       // Clear caches and styles when settings change
       clearPerformanceCaches();
@@ -596,7 +600,7 @@
     processedElements = new WeakSet();
     performanceMetrics.cacheHits = 0;
     performanceMetrics.cacheMisses = 0;
-    console.log('Claude Font Fix: Performance caches cleared');
+    debugLog('Claude Font Fix: Performance caches cleared');
   }
 
   // Clear all original styles to allow fresh application of new settings
@@ -612,7 +616,7 @@
       }
     });
     originalStyles.clear();
-    console.log('Claude Font Fix: Original styles cleared');
+    debugLog('Claude Font Fix: Original styles cleared');
   }
 
   // Periodic cleanup to prevent memory leaks
@@ -637,25 +641,27 @@
       toKeep.forEach(([key, value]) => elementCache.set(key, value));
     }
     
-    console.log(`Claude Font Fix: Cleanup completed. Cache size: ${elementCache.size}, Original styles: ${originalStyles.size}`);
+    debugLog(`Claude Font Fix: Cleanup completed. Cache size: ${elementCache.size}, Original styles: ${originalStyles.size}`);
   }
 
   // Performance monitoring
   function logPerformanceMetrics() {
-    console.log('Claude Font Fix Performance Metrics:', {
-      elementsProcessed: performanceMetrics.elementsProcessed,
-      lastUpdateTime: performanceMetrics.lastUpdateTime.toFixed(2) + 'ms',
-      averageUpdateTime: performanceMetrics.averageUpdateTime.toFixed(2) + 'ms',
-      cacheHitRate: performanceMetrics.cacheHits > 0 ? 
-        ((performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) * 100).toFixed(1) + '%' : '0%',
-      cacheSize: elementCache.size,
-      originalStylesTracked: originalStyles.size
-    });
+    if (CONFIG && CONFIG.DEBUG) {
+      console.log('Claude Font Fix Performance Metrics:', {
+        elementsProcessed: performanceMetrics.elementsProcessed,
+        lastUpdateTime: performanceMetrics.lastUpdateTime.toFixed(2) + 'ms',
+        averageUpdateTime: performanceMetrics.averageUpdateTime.toFixed(2) + 'ms',
+        cacheHitRate: performanceMetrics.cacheHits > 0 ? 
+          ((performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) * 100).toFixed(1) + '%' : '0%',
+        cacheSize: elementCache.size,
+        originalStylesTracked: originalStyles.size
+      });
+    }
   }
   
   // Initialize when DOM is ready
   function init() {
-    console.log('Claude Font Fix: Initializing with performance optimizations...');
+    debugLog('Claude Font Fix: Initializing with performance optimizations...');
     
     // Load settings and apply fonts
     checkEnabled();
@@ -668,11 +674,11 @@
     setInterval(performPeriodicCleanup, 300000);
     
     // Log performance metrics every 60 seconds instead of 30
-    if (console.log) {
+    if (CONFIG && CONFIG.DEBUG) {
       setInterval(logPerformanceMetrics, 60000);
     }
     
-    console.log('Claude Font Fix: Initialization complete with enhanced performance monitoring');
+    debugLog('Claude Font Fix: Initialization complete with enhanced performance monitoring');
   }
   
   // Run when DOM is ready
@@ -693,11 +699,11 @@
     if (rafId) {
       cancelAnimationFrame(rafId);
     }
-    console.log('Claude Font Fix: Cleanup completed on page unload');
+    debugLog('Claude Font Fix: Cleanup completed on page unload');
   });
 
   // Expose performance metrics for debugging (only in development)
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  if (typeof CONFIG !== 'undefined' && CONFIG.DEBUG) {
     window.claudeFontFixDebug = {
       getMetrics: () => performanceMetrics,
       getCacheSize: () => elementCache.size,
