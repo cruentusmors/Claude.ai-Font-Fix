@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Load current state and analytics
   chrome.storage.sync.get(['fontFixEnabled'], function(result) {
+    // Handle potential storage errors
+    if (chrome.runtime.lastError) {
+      console.log('Claude Font Fix: Storage access error, using defaults');
+      updateUI(true); // Default to enabled
+      return;
+    }
+    
     const isEnabled = result.fontFixEnabled !== false; // Default to true
     updateUI(isEnabled);
     loadAnalytics();
@@ -32,10 +39,20 @@ document.addEventListener('DOMContentLoaded', function() {
   // Toggle button click handler
   toggleBtn.addEventListener('click', function() {
     chrome.storage.sync.get(['fontFixEnabled'], function(result) {
+      if (chrome.runtime.lastError) {
+        console.log('Claude Font Fix: Storage access error during toggle');
+        return;
+      }
+      
       const currentState = result.fontFixEnabled !== false;
       const newState = !currentState;
       
       chrome.storage.sync.set({fontFixEnabled: newState}, function() {
+        if (chrome.runtime.lastError) {
+          console.log('Claude Font Fix: Storage write error');
+          return;
+        }
+        
         updateUI(newState);
         trackEvent(newState ? 'extension_enabled' : 'extension_disabled');
       });
@@ -88,6 +105,12 @@ document.addEventListener('DOMContentLoaded', function() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0] && tabs[0].url && tabs[0].url.includes('claude.ai')) {
         chrome.tabs.sendMessage(tabs[0].id, {type: 'GET_PERFORMANCE_METRICS'}, function(response) {
+          // Handle chrome.runtime.lastError to prevent unchecked runtime error
+          if (chrome.runtime.lastError) {
+            console.log('Claude Font Fix: Content script not available on this tab');
+            return;
+          }
+          
           if (response && response.metrics) {
             displayPerformanceStats(response);
             performanceInfo.classList.remove('hidden');
