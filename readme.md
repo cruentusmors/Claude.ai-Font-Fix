@@ -11,9 +11,10 @@ Claude.ai uses serif fonts by default for AI responses, which can be harder to r
 - **Automatic Font Replacement**: Instantly converts serif fonts to sans-serif
 - **System Font Integration**: Uses your system's native fonts for optimal rendering
 - **Dynamic Content Support**: Works with new messages as they appear
-- **Toggle Control**: Easy enable/disable through extension popup
+- **Real-time Toggle Control**: Instant enable/disable without page reload
 - **Lightweight**: Minimal performance impact
 - **Persistent Settings**: Remembers your preferences across sessions
+- **Debug Support**: Console logging for troubleshooting
 
 ## 🚀 Installation
 
@@ -33,7 +34,7 @@ Claude.ai uses serif fonts by default for AI responses, which can be harder to r
 1. **Navigate to Claude.ai** - The extension automatically activates on Claude.ai
 2. **View improved fonts** - Serif fonts are automatically replaced with sans-serif
 3. **Toggle if needed** - Click the extension icon to enable/disable the font fix
-4. **Refresh to apply** - Changes take effect after page reload
+4. **Real-time changes** - Toggle takes effect immediately without needing a page reload
 
 ## 🛠️ How It Works
 
@@ -41,7 +42,10 @@ The extension uses multiple approaches to ensure complete font coverage:
 
 - **CSS Variables Override**: Replaces Claude's custom CSS variables
 - **Class-based Targeting**: Targets specific font classes like `.font-serif`
-- **Content Script Injection**: Adds font styles dynamically
+- **Dynamic Content Script**: Adds and removes font styles based on user preferences
+- **Real-time Toggle**: Instantly applies/removes styles without page reload
+- **MutationObserver**: Monitors for new content and applies fonts automatically
+- **Direct Element Styling**: Applies styles directly to elements for immediate effect
 - **Prose Element Targeting**: Ensures all text content is affected
 
 ### Font Stack Used
@@ -61,10 +65,9 @@ This provides optimal font rendering across different operating systems:
 ```
 claude-font-fix/
 ├── manifest.json       # Extension configuration
-├── content.js          # Main content script
-├── styles.css          # Font override styles
+├── content.js          # Main content script with dynamic toggle support
 ├── popup.html          # Extension popup interface
-├── popup.js            # Popup functionality
+├── popup.js            # Popup functionality with storage management
 ├── icon16.png          # 16x16 icon
 ├── icon48.png          # 48x48 icon
 ├── icon128.png         # 128x128 icon
@@ -86,24 +89,32 @@ claude-font-fix/
 
 ## 🎨 Customization
 
-To modify the font stack, edit the CSS in both `styles.css` and `content.js`:
+To modify the font stack, edit the CSS in `content.js` within the `applyFontFix()` function:
 
 ```css
 font-family: your-preferred-font, fallback-font, sans-serif !important;
 ```
+
+Note: The extension now dynamically controls all font styling through the content script for better toggle functionality.
 
 ## 🐛 Troubleshooting
 
 ### Extension not working?
 1. Ensure you're on `https://claude.ai`
 2. Check that the extension is enabled in `chrome://extensions/`
-3. Try refreshing the Claude.ai page
+3. Open browser console (F12) and look for "Claude Font Fix" messages
 4. Click the extension icon to verify it's active
 
 ### Fonts still appearing as serif?
 1. Open the extension popup and toggle off/on
-2. Hard refresh the page (Ctrl+F5 or Cmd+Shift+R)
-3. Clear browser cache if issues persist
+2. Check browser console for any error messages
+3. Try reloading the extension in `chrome://extensions/`
+4. Clear browser cache if issues persist
+
+### Toggle not working?
+1. Check that storage permissions are granted
+2. Look for console messages indicating state changes
+3. Try disabling and re-enabling the extension
 
 ## 🤝 Contributing
 
