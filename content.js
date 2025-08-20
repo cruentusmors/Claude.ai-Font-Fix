@@ -4,6 +4,7 @@
   'use strict';
   
   let fontFixEnabled = true;
+  let originalStyles = new Map(); // Store original font styles
   
   // Apply or remove font fix based on enabled state
   function applyFontFix() {
@@ -11,9 +12,14 @@
     const existing = document.getElementById('claude-font-fix');
     if (existing) existing.remove();
     
-    if (!fontFixEnabled) return;
+    if (!fontFixEnabled) {
+      // When disabled, restore original fonts and add serif enforcement
+      restoreOriginalFonts();
+      addSerifEnforcement();
+      return;
+    }
     
-    // Apply font fix with more comprehensive targeting
+    // Apply font fix with comprehensive targeting
     const style = document.createElement('style');
     style.id = 'claude-font-fix';
     style.textContent = `
@@ -43,11 +49,35 @@
     applyToExistingElements();
   }
   
+  // Add serif enforcement when extension is disabled
+  function addSerifEnforcement() {
+    const style = document.createElement('style');
+    style.id = 'claude-serif-restore';
+    style.textContent = `
+      /* Restore serif fonts when disabled */
+      .prose, .prose *,
+      .font-serif, .font-claude-response,
+      [class*="prose"], [class*="font-serif"], [class*="claude-response"],
+      .conversation-turn, .message-content, .markdown-content,
+      div[data-testid*="conversation"], div[data-testid*="message"],
+      p, h1, h2, h3, h4, h5, h6, li, blockquote, span, div {
+        font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+      }
+      
+      /* Override CSS variables back to serif */
+      :root {
+        --font-claude-response: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
   // Apply styles directly to existing elements for immediate effect
   function applyToExistingElements() {
-    if (!fontFixEnabled) return;
-    
-    const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif';
+    const fontFamily = fontFixEnabled 
+      ? '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
+      : 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif';
+      
     const selectors = [
       '.prose', '.prose *',
       '.font-serif', '.font-claude-response',
@@ -59,10 +89,44 @@
       try {
         const elements = document.querySelectorAll(selector);
         elements.forEach(el => {
-          el.style.setProperty('font-family', fontFamily, 'important');
+          if (fontFixEnabled) {
+            // Store original style before changing
+            if (!originalStyles.has(el)) {
+              originalStyles.set(el, el.style.fontFamily || '');
+            }
+            el.style.setProperty('font-family', fontFamily, 'important');
+          } else {
+            // Restore original style or set to serif
+            const original = originalStyles.get(el);
+            if (original !== undefined) {
+              if (original) {
+                el.style.fontFamily = original;
+              } else {
+                el.style.setProperty('font-family', fontFamily, 'important');
+              }
+            }
+          }
         });
       } catch (e) {
         // Ignore invalid selectors
+      }
+    });
+  }
+  
+  // Restore original font styles when disabled
+  function restoreOriginalFonts() {
+    // Remove serif enforcement style if it exists
+    const serifStyle = document.getElementById('claude-serif-restore');
+    if (serifStyle) serifStyle.remove();
+    
+    // Restore all stored original styles
+    originalStyles.forEach((originalFont, element) => {
+      if (element && element.parentNode) {
+        if (originalFont) {
+          element.style.fontFamily = originalFont;
+        } else {
+          element.style.removeProperty('font-family');
+        }
       }
     });
   }
@@ -87,8 +151,6 @@
   
   // Watch for dynamic content changes
   const observer = new MutationObserver(function(mutations) {
-    if (!fontFixEnabled) return;
-    
     let shouldReapply = false;
     mutations.forEach(mutation => {
       if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {

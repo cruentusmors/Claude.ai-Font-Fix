@@ -16,13 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       chrome.storage.sync.set({fontFixEnabled: newState}, function() {
         updateUI(newState);
-        
-        // Reload the current tab to apply changes
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          if (tabs[0] && tabs[0].url.includes('claude.ai')) {
-            chrome.tabs.reload(tabs[0].id);
-          }
-        });
+        // Remove the page reload - content script will handle the change in real-time
       });
     });
   });
