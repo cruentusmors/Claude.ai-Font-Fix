@@ -68,7 +68,7 @@ Claude.ai uses serif fonts by default for AI responses, which can be harder to r
 ## 🚀 Installation
 
 ### From Chrome Web Store
-*Coming soon...*
+*Coming soon - Currently in development v1.0*
 
 ### Manual Installation (Developer Mode)
 
@@ -77,6 +77,7 @@ Claude.ai uses serif fonts by default for AI responses, which can be harder to r
 3. Enable "Developer mode" in the top right
 4. Click "Load unpacked" and select the extension folder
 5. The extension icon should appear in your Chrome toolbar
+6. Visit `https://claude.ai` to automatically benefit from improved font readability
 
 ## 🎯 Usage
 
@@ -162,27 +163,28 @@ ui-serif, Georgia, Cambria, "Times New Roman", Times, serif
 ```
 claude-font-fix/
 ├── manifest.json              # Extension configuration with Manifest V3
+├── config.js                  # Configuration file for extension settings and debugging
 ├── content.js                 # Advanced content script with performance optimization
 ├── popup.html                 # Extension popup with analytics and feedback
 ├── popup.js                   # Popup functionality with usage tracking
 ├── options.html               # Advanced options page with live preview
 ├── options.js                 # Options functionality with export/import
-├── icons/
-│   ├── icon16.png            # 16x16 toolbar icon
-│   ├── icon48.png            # 48x48 management page icon
-│   ├── icon128.png           # 128x128 store icon
-│   └── icon.svg              # Vector source file
+├── Diagram.mmd                # Mermaid architecture diagram showing extension flow
+├── Top-3-Suggestions.md       # Strategic enhancement roadmap and feature suggestions
+├── icon16.png                 # 16x16 toolbar icon
+├── icon48.png                 # 48x48 management page icon
+├── icon128.png                # 128x128 store icon
+├── icon.svg                   # Vector source file
 ├── .github/
-│   └── ISSUE_TEMPLATE/       # GitHub issue templates
-│       ├── bug_report.md     # Bug report template
+│   └── ISSUE_TEMPLATE/        # GitHub issue templates
+│       ├── bug_report.md      # Bug report template
 │       ├── feature_request.md # Feature request template
-│       └── feedback.md       # User feedback template
-├── docs/
-│   ├── store-description.md  # Chrome Web Store listing content
-│   ├── privacy-policy.md     # Comprehensive privacy policy
-│   └── chrome-store-guide.md # Store submission guide
-├── README.md                 # This comprehensive documentation
-└── LICENSE                   # MIT License
+│       └── feedback.md        # User feedback template
+├── store-description.md       # Chrome Web Store listing content
+├── privacy-policy.md          # Comprehensive privacy policy
+├── chrome-store-guide.md      # Store submission guide
+├── README.md                  # This comprehensive documentation
+└── LICENSE                    # MIT License
 ```
 
 ## 🔧 Technical Details
@@ -196,6 +198,7 @@ claude-font-fix/
 - **Update Frequency**: Adaptive 500ms-2s debouncing based on content change rate
 
 ### **Advanced Architecture**
+- **Configuration System**: Centralized `config.js` for extension metadata, debug settings, and external URLs
 - **RequestAnimationFrame Engine**: Smooth, non-blocking DOM updates at 60fps
 - **Enhanced Intersection Observer**: Visible-only element processing with 100px margin
 - **Smart MutationObserver**: Filtered change detection with character data optimization
@@ -221,8 +224,12 @@ claude-font-fix/
 ### **Permissions Required**
 - **`storage`**: Save user preferences, usage statistics, and performance analytics locally
 - **`activeTab`**: Access current Claude.ai tab for font processing and analytics
-- **`host_permissions`**: Limited to `https://claude.ai/*` domain only for security
-- **`options_page`**: Advanced customization interface with live preview capabilities
+- **`host_permissions`**: Limited to `https://claude.ai/*` domain only for security and focused functionality
+
+### **Content Scripts Configuration**
+- **Injection Files**: `config.js` (configuration) and `content.js` (main logic)
+- **Run Timing**: `document_idle` for optimal performance and compatibility
+- **Target Domains**: Exclusively `https://claude.ai/*` for focused functionality
 
 ## 🎨 Customization
 
@@ -318,14 +325,43 @@ const performanceSettings = {
 2. Check for conflicts with other extensions
 3. Monitor browser console for excessive logging
 
+## 📖 Documentation & Development
+
+### **Architecture Overview**
+The extension architecture is documented in the `Diagram.mmd` Mermaid flowchart, which shows:
+- Extension component interactions (popup, content script, background)
+- Chrome API integrations and permissions
+- Font processing pipeline and DOM manipulation
+- Storage and settings management flow
+
+### **Strategic Roadmap**
+The `Top-3-Suggestions.md` document outlines the strategic development roadmap with:
+- **Phase 1**: AI-powered typography optimization and accessibility features
+- **Phase 2**: Multi-platform support for OpenAI, Bard, and other AI services
+- **Phase 3**: Enterprise features, analytics dashboard, and community platform
+
+### **Configuration Management**
+The `config.js` file centralizes:
+- Extension metadata and GitHub repository links
+- Debug mode settings for development
+- Donation and support platform URLs
+- Helper functions for consistent logging
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to:
 
-1. Report bugs or issues
-2. Suggest new features
-3. Submit pull requests
-4. Improve documentation
+1. **Report bugs or issues** using the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md)
+2. **Suggest new features** using the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md)  
+3. **Provide general feedback** using the [feedback template](.github/ISSUE_TEMPLATE/feedback.md)
+4. Submit pull requests with improvements
+5. Improve documentation and help with testing
+
+### GitHub Issue Templates
+We provide structured templates to help you submit high-quality reports:
+- **Bug Reports**: Detailed template for reporting issues with steps to reproduce
+- **Feature Requests**: Template for suggesting new functionality with use cases
+- **General Feedback**: Open format for user experience feedback and suggestions
 
 ## 🏪 Chrome Web Store
 
