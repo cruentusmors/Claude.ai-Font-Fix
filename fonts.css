@@ -1,19 +1,12 @@
 /* Web font imports for dyslexic-friendly fonts that may not be locally installed */
+/* Note: External fonts are loaded securely via CSP-compliant methods */
 
-/* Lexend family - proven to improve reading comprehension */
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
-
-/* Atkinson Hyperlegible - designed for visual accessibility */
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-
-/* Comic Neue - modern alternative to Comic Sans MS */
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
-
-/* OpenDyslexic fonts (fallback to CDN if not locally installed) */
+/* OpenDyslexic fonts with fallback to local installation */
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
+  src: local('OpenDyslexic'), 
+       local('OpenDyslexic-Regular'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
        url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
@@ -22,7 +15,9 @@
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Bold.woff2') format('woff2'),
+  src: local('OpenDyslexic Bold'), 
+       local('OpenDyslexic-Bold'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Bold.woff2') format('woff2'),
        url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Bold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
@@ -31,7 +26,9 @@
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Italic.woff2') format('woff2'),
+  src: local('OpenDyslexic Italic'), 
+       local('OpenDyslexic-Italic'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Italic.woff2') format('woff2'),
        url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Italic.woff') format('woff');
   font-weight: normal;
   font-style: italic;
@@ -40,7 +37,9 @@
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2'),
+  src: local('OpenDyslexic Bold Italic'), 
+       local('OpenDyslexic-BoldItalic'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2'),
        url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-BoldItalic.woff') format('woff');
   font-weight: bold;
   font-style: italic;

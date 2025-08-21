@@ -8,24 +8,70 @@
   let advancedSettings = null; // Store advanced settings from options page
   let fontsLoaded = false; // Track if web fonts are loaded
   
-  // Font loading detection
+  // Get adaptive timeout based on network conditions and user settings
+  function getAdaptiveTimeout() {
+    const settings = advancedSettings || defaultAdvancedSettings;
+    const baseTimeout = settings.fontLoadTimeout || 2000;
+    
+    // Return base timeout if adaptive is disabled
+    if (!settings.adaptiveTimeout) {
+      return baseTimeout;
+    }
+    
+    // Adapt based on connection type if available
+    if (navigator.connection && navigator.connection.effectiveType) {
+      const connection = navigator.connection;
+      switch (connection.effectiveType) {
+        case 'slow-2g': return baseTimeout * 3;
+        case '2g': return baseTimeout * 2;
+        case '3g': return baseTimeout * 1.5;
+        case '4g': return baseTimeout;
+        default: return baseTimeout;
+      }
+    }
+    
+    return baseTimeout;
+  }
+  
+  // Font loading detection with improved security and CSP compliance
   async function ensureFontsLoaded() {
     if (fontsLoaded) return true;
     
     try {
+      // Inject Google Fonts API link if not already present (secure approach)
+      const fontLinkId = 'claude-font-fix-google-fonts';
+      if (!document.getElementById(fontLinkId)) {
+        const link = document.createElement('link');
+        link.id = fontLinkId;
+        link.rel = 'preconnect';
+        link.href = 'https://fonts.googleapis.com';
+        link.crossOrigin = 'anonymous'; // Required for preconnect
+        document.head.appendChild(link);
+        
+        // Add the actual font stylesheet with security headers
+        const fontLink = document.createElement('link');
+        fontLink.id = fontLinkId + '-css';
+        fontLink.rel = 'stylesheet';
+        fontLink.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap';
+        fontLink.crossOrigin = 'anonymous';
+        
+        // Add referrer policy for security
+        fontLink.referrerPolicy = 'no-referrer-when-downgrade';
+        
+        // Error handling for font loading
+        fontLink.onerror = () => {
+          debugLog('Claude Font Fix: Google Fonts loading failed, using fallbacks');
+        };
+        
+        document.head.appendChild(fontLink);
+        debugLog('Claude Font Fix: Google Fonts link injected with security headers');
+      }
+      
       // Check if document.fonts API is available
       if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
         
-        // Check for specific fonts
-        const fontChecks = [
-          new FontFace('Lexend', 'url(https://fonts.gstatic.com/s/lexend/v18/wlptgwvFAVdoq2_v9KXZdw.woff2)').load(),
-          new FontFace('Atkinson Hyperlegible', 'url(https://fonts.gstatic.com/s/atkinsonhyperlegible/v11/9Bt73C1KxNDXMspQ1lPyU89-1h6ONRlW45GE5ZgpewSSbQ.woff2)').load()
-        ];
-        
-        await Promise.allSettled(fontChecks);
-        
-        // Wait a bit more for fonts to be applied
+        // Wait for fonts to be loaded by the browser
         await new Promise(resolve => setTimeout(resolve, 100));
         
         fontsLoaded = true;
@@ -36,8 +82,12 @@
       debugLog('Claude Font Fix: Font loading detection failed, proceeding anyway:', error);
     }
     
-    // Fallback: assume fonts are loaded after a reasonable delay
-    setTimeout(() => { fontsLoaded = true; }, 2000);
+    // Fallback: assume fonts are loaded after adaptive delay
+    const timeout = getAdaptiveTimeout();
+    setTimeout(() => { 
+      fontsLoaded = true; 
+      debugLog(`Claude Font Fix: Font loading timeout after ${timeout}ms`);
+    }, timeout);
     return true;
   }
   
@@ -68,7 +118,9 @@
     targetMath: true,
     targetCode: false,
     enableTransitions: false,
-    preserveEmphasis: true
+    preserveEmphasis: true,
+    fontLoadTimeout: 2000,
+    adaptiveTimeout: true
   };
 
   // Font family configurations with improved Lexend handling
@@ -85,6 +137,32 @@
     comic: '"Comic Sans MS", "Comic Neue", cursive, sans-serif',
     custom: ''
   };
+
+  // Robust font identification system
+  const FONT_FAMILIES = {
+    lexend: new Set([
+      'Lexend', 'Lexend Deca', 'Lexend Exa', 'Lexend Giga', 
+      'Lexend Mega', 'Lexend Peta', 'Lexend Tera', 'Lexend Zetta'
+    ]),
+    atkinson: new Set(['Atkinson Hyperlegible']),
+    opendyslexic: new Set(['OpenDyslexic', 'OpenDyslexic-Regular']),
+    comic: new Set(['Comic Sans MS', 'Comic Neue'])
+  };
+
+  // Identify font family category from font string
+  function identifyFontFamily(fontFamily) {
+    if (!fontFamily) return 'system';
+    
+    const fontNames = fontFamily.split(',').map(f => f.trim().replace(/^["']|["']$/g, ''));
+    
+    for (const [category, fonts] of Object.entries(FONT_FAMILIES)) {
+      if (fontNames.some(name => fonts.has(name))) {
+        return category;
+      }
+    }
+    
+    return 'system';
+  }
 
   // Get current font family based on advanced settings
   function getCurrentFontFamily() {
@@ -349,14 +427,27 @@
         font-family: ${fontFamily} !important;
       }
       
-      /* Special handling for Lexend font */`;
+      /* Special handling for web fonts */`;
     
-    if (fontFamily.includes('Lexend')) {
+    const fontCategory = identifyFontFamily(fontFamily);
+    if (fontCategory === 'lexend') {
       cssRules += `\n      
       html body * {
         font-feature-settings: "kern" 1, "liga" 1 !important;
         font-variant-ligatures: common-ligatures !important;
         text-rendering: optimizeLegibility !important;
+      }`;
+    } else if (fontCategory === 'atkinson') {
+      cssRules += `\n      
+      html body * {
+        font-feature-settings: "kern" 1 !important;
+        text-rendering: optimizeLegibility !important;
+      }`;
+    } else if (fontCategory === 'opendyslexic') {
+      cssRules += `\n      
+      html body * {
+        font-feature-settings: normal !important;
+        text-rendering: optimizeSpeed !important;
       }`;
     }
     

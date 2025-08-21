@@ -186,50 +186,107 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewText = fontPreview.querySelector('p:first-of-type');
     if (previewText) {
       const fontDisplayName = getFontDisplayName();
-      const actualFont = detectActualFont(fontPreview);
+      const detectionResult = detectActualFont(fontPreview);
       
       let fontInfo = `<strong>Font:</strong> ${fontDisplayName} | <strong>Size:</strong> ${Math.round(fontSize * 100)}% | <strong>Line Height:</strong> ${lineHeight}`;
       
       // Add font detection info for debugging
-      if (actualFont && actualFont !== fontDisplayName) {
-        fontInfo += `<br><small style="color: #dc3545;">Actual font rendered: ${actualFont}</small>`;
-      } else if (fontDisplayName.includes('Lexend') || fontDisplayName.includes('Atkinson') || fontDisplayName.includes('OpenDyslexic')) {
-        fontInfo += `<br><small style="color: #28a745;">✓ Web font loaded successfully</small>`;
+      if (detectionResult && detectionResult.font) {
+        if (detectionResult.loaded && detectionResult.font !== 'Fallback font') {
+          fontInfo += `<br><small style="color: #28a745;">✓ ${detectionResult.font} loaded successfully (${detectionResult.method})</small>`;
+        } else if (!detectionResult.loaded) {
+          fontInfo += `<br><small style="color: #dc3545;">⚠ Web font may not be loaded - using fallback (${detectionResult.method})</small>`;
+        }
+        
+        // Add debug info if available
+        if (detectionResult.debug && CONFIG && CONFIG.DEBUG) {
+          fontInfo += `<br><small style="color: #6c757d;">Debug: ${JSON.stringify(detectionResult.debug)}</small>`;
+        }
       }
       
       previewText.innerHTML = fontInfo;
     }
   }
 
-  // Detect what font is actually being rendered
+  // Enhanced font detection with Font Loading API and improved canvas fallback
   function detectActualFont(element) {
     try {
-      // Create a temporary canvas to measure font rendering
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      
-      const testText = 'The quick brown fox jumps over the lazy dog';
-      const fallbackFont = 'monospace';
-      
-      // Set font from element
       const computedStyle = window.getComputedStyle(element);
       const fontFamily = computedStyle.fontFamily;
+      const fontSize = computedStyle.fontSize || "16px";
+      const primaryFont = fontFamily.split(',')[0].replace(/['"]/g, '').trim();
       
-      // Test if the specified font is actually being used
-      context.font = `16px ${fontFamily}`;
+      // Use Font Loading API if available (preferred method)
+      if (document.fonts && document.fonts.check) {
+        try {
+          if (document.fonts.check(`${fontSize} "${primaryFont}"`)) {
+            return {
+              font: primaryFont,
+              loaded: true,
+              method: 'Font Loading API'
+            };
+          } else {
+            return {
+              font: 'Fallback font',
+              loaded: false,
+              method: 'Font Loading API'
+            };
+          }
+        } catch (error) {
+          debugLog('Font Loading API failed:', error);
+        }
+      }
+      
+      // Fallback to canvas detection (less reliable but widely supported)
+      return canvasBasedDetection(element, fontFamily, fontSize, primaryFont);
+    } catch (e) {
+      return {
+        font: 'Detection failed',
+        loaded: false,
+        method: 'Error',
+        error: e.message
+      };
+    }
+  }
+
+  // Canvas-based font detection with improved reliability
+  function canvasBasedDetection(element, fontFamily, fontSize, primaryFont) {
+    try {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const testText = 'The quick brown fox jumps over the lazy dog 1234567890';
+      const fallbackFont = 'monospace';
+      
+      // Test with specified font
+      context.font = `${fontSize} ${fontFamily}`;
       const testWidth = context.measureText(testText).width;
       
-      context.font = `16px ${fallbackFont}`;
+      // Test with fallback
+      context.font = `${fontSize} ${fallbackFont}`;
       const fallbackWidth = context.measureText(testText).width;
       
-      // If widths are significantly different, the font is probably loaded
-      if (Math.abs(testWidth - fallbackWidth) > 1) {
-        return fontFamily.split(',')[0].replace(/['"]/g, '').trim();
-      } else {
-        return 'Fallback font (web font may not be loaded)';
-      }
-    } catch (e) {
-      return null;
+      // Use relative threshold instead of absolute pixel difference
+      const threshold = Math.max(1, Math.abs(fallbackWidth * 0.05)); // 5% difference
+      const isLoaded = Math.abs(testWidth - fallbackWidth) > threshold;
+      
+      return {
+        font: isLoaded ? primaryFont : 'Fallback font',
+        loaded: isLoaded,
+        method: 'Canvas detection',
+        debug: {
+          testWidth,
+          fallbackWidth,
+          difference: Math.abs(testWidth - fallbackWidth),
+          threshold
+        }
+      };
+    } catch (error) {
+      return {
+        font: 'Canvas detection failed',
+        loaded: false,
+        method: 'Canvas Error',
+        error: error.message
+      };
     }
   }
 
