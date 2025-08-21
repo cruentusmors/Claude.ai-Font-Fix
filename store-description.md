@@ -1,13 +1,13 @@
 # Claude Font Fix - Store Description
 
 ## Short Description (132 characters max)
-Transform Claude.ai's serif fonts into clean, readable sans-serif fonts instantly! Better readability for everyone.
+Transform Claude.ai's fonts into dyslexic-friendly, readable typography! Perfect for accessibility and extended reading.
 
 ## Detailed Description
 
-**Transform Claude.ai into a More Readable Experience!**
+**Transform Claude.ai into a More Accessible & Readable Experience!**
 
-Claude Font Fix automatically converts Claude.ai's default serif fonts into clean, modern sans-serif fonts for dramatically improved readability. Perfect for users with dyslexia, extended reading sessions, or anyone who prefers modern typography.
+Claude Font Fix automatically converts Claude.ai's default serif fonts into clean, dyslexic-friendly fonts for dramatically improved readability. Features specialized fonts designed for dyslexia, visual impairments, and enhanced reading comprehension.
 
 ## ✨ **Key Features**
 
@@ -21,8 +21,11 @@ Claude Font Fix automatically converts Claude.ai's default serif fonts into clea
 - Changes take effect instantly
 - Remembers your preference across sessions
 
-**🎨 Advanced Customization**
-- Choose from 6 built-in font options or use custom fonts
+**🎨 Advanced Customization & Accessibility**
+- Choose from 10+ font options including dyslexic-friendly fonts
+- **OpenDyslexic**: Specially designed with weighted bottoms to reduce letter confusion
+- **Atkinson Hyperlegible**: Created by Braille Institute for visual accessibility
+- **Lexend**: Research-proven to improve reading comprehension by up to 25%
 - Adjust font size (80%-130%), line height, and letter spacing
 - Smart targeting for math and code content
 - Preserve text emphasis (bold/italic)
@@ -41,11 +44,13 @@ Claude Font Fix automatically converts Claude.ai's default serif fonts into clea
 
 ## 🎯 **Perfect For:**
 
-- **Accessibility**: Users with dyslexia or reading difficulties
-- **Developers**: Those who prefer code-style fonts for better focus
-- **Students**: Extended reading sessions with AI assistance
-- **Professionals**: Clean typography for better document readability
-- **Anyone**: Who wants modern, readable fonts on Claude.ai
+- **Dyslexia Support**: OpenDyslexic and other specialized fonts designed to reduce reading difficulties
+- **Visual Accessibility**: Atkinson Hyperlegible for users with low vision or visual processing differences
+- **Reading Comprehension**: Lexend fonts proven to improve reading speed and comprehension
+- **Extended Reading**: Comfortable typography for long Claude.ai sessions
+- **Developers**: Clean fonts that work well with code and technical content
+- **Students**: Enhanced readability for research and learning
+- **Anyone**: Seeking better typography and reading experience
 
 ## 🖥️ **Cross-Platform Support**
 

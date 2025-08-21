@@ -54,6 +54,31 @@
     .font-group h3::before { content: "🎨"; }
     .typography-group h3::before { content: "📏"; }
     .advanced-group h3::before { content: "⚙️"; }
+    .accessibility-group h3::before { content: "♿"; }
+    
+    .accessibility-info {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    
+    .accessibility-info h4 {
+      margin-top: 0;
+      color: #007bff;
+    }
+    
+    .accessibility-info ul {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .accessibility-info .note {
+      font-size: 12px;
+      color: #6c757d;
+      margin-bottom: 0;
+    }
     
     select, input, textarea { 
       width: 100%;
@@ -235,13 +260,20 @@
         <option value="roboto">Roboto (Google Fonts)</option>
         <option value="segoe">Segoe UI Only (Windows Native)</option>
         <option value="sf">San Francisco (macOS Native)</option>
+        <optgroup label="🌟 Dyslexic-Friendly Fonts">
+          <option value="opendyslexic">OpenDyslexic (Designed for Dyslexia)</option>
+          <option value="atkinson">Atkinson Hyperlegible (Visual Accessibility)</option>
+          <option value="lexend">Lexend (Improved Reading Comprehension)</option>
+          <option value="sylexiad">Sylexiad Sans (Dyslexia Support)</option>
+          <option value="comic">Comic Sans MS (Familiar & Readable)</option>
+        </optgroup>
         <option value="custom">Custom Font Stack</option>
       </select>
       <textarea id="customFontStack" 
                 placeholder="Enter custom font stack, e.g.: 'Inter', 'Helvetica Neue', 'Arial', sans-serif" 
                 rows="2" 
                 class="hidden"></textarea>
-      <div class="description">Choose your preferred font family. System Default adapts to your operating system.</div>
+      <div class="description">Choose your preferred font family. System Default adapts to your operating system. Dyslexic-friendly fonts are specially designed to improve readability for people with dyslexia and visual processing differences.</div>
       
       <div class="font-preview" id="fontPreview">
         <h4>Font Preview</h4>
@@ -302,6 +334,25 @@
         <label for="preserveEmphasis">Preserve bold and italic styling</label>
       </div>
       <div class="description">Maintain text emphasis while applying font changes.</div>
+    </div>
+    
+    <div class="option-group accessibility-group">
+      <h3>♿ Accessibility Information</h3>
+      
+      <div class="accessibility-info">
+        <h4>About Dyslexic-Friendly Fonts</h4>
+        <ul>
+          <li><strong>OpenDyslexic:</strong> Specifically designed with weighted bottoms and unique character shapes to reduce letter confusion</li>
+          <li><strong>Atkinson Hyperlegible:</strong> Created by the Braille Institute for enhanced legibility for people with low vision</li>
+          <li><strong>Lexend:</strong> Research-backed font family proven to improve reading proficiency by up to 25%</li>
+          <li><strong>Sylexiad Sans:</strong> Alternative dyslexia-friendly font with distinctive character shapes</li>
+          <li><strong>Comic Sans MS:</strong> Often recommended for dyslexia due to its informal, non-uniform letter shapes</li>
+        </ul>
+        <p class="note">
+          <strong>Note:</strong> Font effectiveness varies by individual. Try different options to find what works best for you.
+          Some fonts may require separate installation on your system for optimal display.
+        </p>
+      </div>
     </div>
     
     <div class="button-group">

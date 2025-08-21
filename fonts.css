@@ -1,0 +1,92 @@
+/* Web font imports for dyslexic-friendly fonts that may not be locally installed */
+
+/* Lexend family - proven to improve reading comprehension */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
+
+/* Atkinson Hyperlegible - designed for visual accessibility */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* Comic Neue - modern alternative to Comic Sans MS */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+/* OpenDyslexic fonts (fallback to CDN if not locally installed) */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Bold.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Italic.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Italic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-BoldItalic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Force font loading and ensure proper display */
+.claude-font-fix-lexend,
+.claude-font-fix-lexend * {
+  font-family: "Lexend", "Lexend Deca", sans-serif !important;
+  font-feature-settings: normal !important;
+  font-variant-ligatures: normal !important;
+}
+
+.claude-font-fix-opendyslexic,
+.claude-font-fix-opendyslexic * {
+  font-family: "OpenDyslexic", "Comic Sans MS", "Comic Neue", Verdana, Arial, sans-serif !important;
+  font-feature-settings: normal !important;
+}
+
+.claude-font-fix-atkinson,
+.claude-font-fix-atkinson * {
+  font-family: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-feature-settings: normal !important;
+}
+
+.claude-font-fix-comic,
+.claude-font-fix-comic * {
+  font-family: "Comic Sans MS", "Comic Neue", cursive, sans-serif !important;
+  font-feature-settings: normal !important;
+}
+
+/* High-specificity rules to ensure fonts are applied */
+html body .prose *,
+html body .font-serif *,
+html body .font-claude-response *,
+html body [class*="prose"] *,
+html body [class*="font-serif"] *,
+html body [class*="claude-response"] * {
+  font-feature-settings: inherit !important;
+  font-variant-ligatures: inherit !important;
+}
+
+/* Preload hint for faster font loading */
+@media (prefers-reduced-motion: no-preference) {
+  .claude-font-fix-loading {
+    font-display: swap;
+  }
+}

@@ -33,13 +33,18 @@ document.addEventListener('DOMContentLoaded', function() {
     preserveEmphasis: true
   };
 
-  // Font family configurations
+  // Font family configurations with improved Lexend handling
   const fontConfigs = {
     system: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
     inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     roboto: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
     segoe: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
     sf: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif',
+    opendyslexic: '"OpenDyslexic", "Comic Sans MS", "Comic Neue", Verdana, Arial, sans-serif',
+    atkinson: '"Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    lexend: '"Lexend", "Lexend Deca", sans-serif',
+    sylexiad: '"Sylexiad Sans", "OpenDyslexic", "Comic Sans MS", Verdana, Arial, sans-serif',
+    comic: '"Comic Sans MS", "Comic Neue", cursive, sans-serif',
     custom: ''
   };
 
@@ -156,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return fontConfigs[selectedFont] || fontConfigs.system;
   }
 
-  // Update font preview
+  // Update font preview with font loading detection
   function updatePreview() {
     const fontFamily = getCurrentFontFamily();
     const fontSize = fontSizeSlider.value;
@@ -170,15 +175,61 @@ document.addEventListener('DOMContentLoaded', function() {
       fontSize: fontSize + 'em',
       lineHeight: lineHeight,
       letterSpacing: letterSpacing + 'px',
-      transition: enableTransitions ? 'all 0.3s ease' : 'none'
+      transition: enableTransitions ? 'all 0.3s ease' : 'none',
+      fontFeatureSettings: 'normal',
+      fontVariantLigatures: 'normal'
     };
 
     Object.assign(fontPreview.style, previewStyles);
 
-    // Update preview text to show current settings
+    // Update preview text to show current settings and font detection
     const previewText = fontPreview.querySelector('p:first-of-type');
     if (previewText) {
-      previewText.innerHTML = `<strong>Font:</strong> ${getFontDisplayName()} | <strong>Size:</strong> ${Math.round(fontSize * 100)}% | <strong>Line Height:</strong> ${lineHeight}`;
+      const fontDisplayName = getFontDisplayName();
+      const actualFont = detectActualFont(fontPreview);
+      
+      let fontInfo = `<strong>Font:</strong> ${fontDisplayName} | <strong>Size:</strong> ${Math.round(fontSize * 100)}% | <strong>Line Height:</strong> ${lineHeight}`;
+      
+      // Add font detection info for debugging
+      if (actualFont && actualFont !== fontDisplayName) {
+        fontInfo += `<br><small style="color: #dc3545;">Actual font rendered: ${actualFont}</small>`;
+      } else if (fontDisplayName.includes('Lexend') || fontDisplayName.includes('Atkinson') || fontDisplayName.includes('OpenDyslexic')) {
+        fontInfo += `<br><small style="color: #28a745;">✓ Web font loaded successfully</small>`;
+      }
+      
+      previewText.innerHTML = fontInfo;
+    }
+  }
+
+  // Detect what font is actually being rendered
+  function detectActualFont(element) {
+    try {
+      // Create a temporary canvas to measure font rendering
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      const testText = 'The quick brown fox jumps over the lazy dog';
+      const fallbackFont = 'monospace';
+      
+      // Set font from element
+      const computedStyle = window.getComputedStyle(element);
+      const fontFamily = computedStyle.fontFamily;
+      
+      // Test if the specified font is actually being used
+      context.font = `16px ${fontFamily}`;
+      const testWidth = context.measureText(testText).width;
+      
+      context.font = `16px ${fallbackFont}`;
+      const fallbackWidth = context.measureText(testText).width;
+      
+      // If widths are significantly different, the font is probably loaded
+      if (Math.abs(testWidth - fallbackWidth) > 1) {
+        return fontFamily.split(',')[0].replace(/['"]/g, '').trim();
+      } else {
+        return 'Fallback font (web font may not be loaded)';
+      }
+    } catch (e) {
+      return null;
     }
   }
 
