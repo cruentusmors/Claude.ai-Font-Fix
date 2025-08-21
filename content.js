@@ -6,6 +6,90 @@
   let fontFixEnabled = true;
   let originalStyles = new Map(); // Store original font styles
   let advancedSettings = null; // Store advanced settings from options page
+  let fontsLoaded = false; // Track if web fonts are loaded
+  
+  // Get adaptive timeout based on network conditions and user settings
+  function getAdaptiveTimeout() {
+    const settings = advancedSettings || defaultAdvancedSettings;
+    const baseTimeout = settings.fontLoadTimeout || 2000;
+    
+    // Return base timeout if adaptive is disabled
+    if (!settings.adaptiveTimeout) {
+      return baseTimeout;
+    }
+    
+    // Adapt based on connection type if available
+    if (navigator.connection && navigator.connection.effectiveType) {
+      const connection = navigator.connection;
+      switch (connection.effectiveType) {
+        case 'slow-2g': return baseTimeout * 3;
+        case '2g': return baseTimeout * 2;
+        case '3g': return baseTimeout * 1.5;
+        case '4g': return baseTimeout;
+        default: return baseTimeout;
+      }
+    }
+    
+    return baseTimeout;
+  }
+  
+  // Font loading detection with improved security and CSP compliance
+  async function ensureFontsLoaded() {
+    if (fontsLoaded) return true;
+    
+    try {
+      // Inject Google Fonts API link if not already present (secure approach)
+      const fontLinkId = 'claude-font-fix-google-fonts';
+      if (!document.getElementById(fontLinkId)) {
+        const link = document.createElement('link');
+        link.id = fontLinkId;
+        link.rel = 'preconnect';
+        link.href = 'https://fonts.googleapis.com';
+        link.crossOrigin = 'anonymous'; // Required for preconnect
+        document.head.appendChild(link);
+        
+        // Add the actual font stylesheet with security headers
+        const fontLink = document.createElement('link');
+        fontLink.id = fontLinkId + '-css';
+        fontLink.rel = 'stylesheet';
+        fontLink.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap';
+        fontLink.crossOrigin = 'anonymous';
+        
+        // Add referrer policy for security
+        fontLink.referrerPolicy = 'no-referrer-when-downgrade';
+        
+        // Error handling for font loading
+        fontLink.onerror = () => {
+          debugLog('Claude Font Fix: Google Fonts loading failed, using fallbacks');
+        };
+        
+        document.head.appendChild(fontLink);
+        debugLog('Claude Font Fix: Google Fonts link injected with security headers');
+      }
+      
+      // Check if document.fonts API is available
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+        
+        // Wait for fonts to be loaded by the browser
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        fontsLoaded = true;
+        debugLog('Claude Font Fix: Web fonts loaded successfully');
+        return true;
+      }
+    } catch (error) {
+      debugLog('Claude Font Fix: Font loading detection failed, proceeding anyway:', error);
+    }
+    
+    // Fallback: assume fonts are loaded after adaptive delay
+    const timeout = getAdaptiveTimeout();
+    setTimeout(() => { 
+      fontsLoaded = true; 
+      debugLog(`Claude Font Fix: Font loading timeout after ${timeout}ms`);
+    }, timeout);
+    return true;
+  }
   
   // Performance optimization variables
   let rafId = null;
@@ -34,18 +118,75 @@
     targetMath: true,
     targetCode: false,
     enableTransitions: false,
-    preserveEmphasis: true
+    preserveEmphasis: true,
+    fontLoadTimeout: 2000,
+    adaptiveTimeout: true
   };
 
-  // Font family configurations
+  // Font family configurations with improved Lexend handling
   const fontConfigs = {
     system: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
     inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     roboto: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
     segoe: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
     sf: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif',
+    opendyslexic: '"OpenDyslexic", "Comic Sans MS", "Comic Neue", Verdana, Arial, sans-serif',
+    atkinson: '"Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    lexend: '"Lexend", "Lexend Deca", sans-serif',
+    sylexiad: '"Sylexiad Sans", "OpenDyslexic", "Comic Sans MS", Verdana, Arial, sans-serif',
+    comic: '"Comic Sans MS", "Comic Neue", cursive, sans-serif',
     custom: ''
   };
+
+  // Robust font identification system
+  const FONT_FAMILIES = {
+    lexend: new Set([
+      'Lexend', 'Lexend Deca', 'Lexend Exa', 'Lexend Giga', 
+      'Lexend Mega', 'Lexend Peta', 'Lexend Tera', 'Lexend Zetta'
+    ]),
+    atkinson: new Set(['Atkinson Hyperlegible']),
+    opendyslexic: new Set(['OpenDyslexic', 'OpenDyslexic-Regular']),
+    comic: new Set(['Comic Sans MS', 'Comic Neue'])
+  };
+
+  // Identify font family category from font string
+  function identifyFontFamily(fontFamily) {
+    if (!fontFamily) return 'system';
+    
+    const fontNames = fontFamily.split(',').map(f => f.trim().replace(/^["']|["']$/g, ''));
+    
+    for (const [category, fonts] of Object.entries(FONT_FAMILIES)) {
+      if (fontNames.some(name => fonts.has(name))) {
+        return category;
+      }
+    }
+    
+    return 'system';
+  }
+
+  // Cached version of identifyFontFamily for performance optimization
+  const fontFamilyCache = new Map();
+  function identifyFontFamilyCached(fontFamily) {
+    // Check cache first
+    if (fontFamilyCache.has(fontFamily)) {
+      return fontFamilyCache.get(fontFamily);
+    }
+    
+    // Compute and cache result
+    const result = identifyFontFamily(fontFamily);
+    fontFamilyCache.set(fontFamily, result);
+    
+    // Prevent cache from growing too large (memory management)
+    if (fontFamilyCache.size > 100) {
+      const firstKey = fontFamilyCache.keys().next().value;
+      fontFamilyCache.delete(firstKey);
+      if (CONFIG.DEBUG) {
+        debugLog('Font family cache size limit reached, removed oldest entry');
+      }
+    }
+    
+    return result;
+  }
 
   // Get current font family based on advanced settings
   function getCurrentFontFamily() {
@@ -241,7 +382,10 @@
   }
   
   // Apply or remove font fix based on enabled state with advanced settings
-  function applyFontFix() {
+  async function applyFontFix() {
+    // Ensure web fonts are loaded first
+    await ensureFontsLoaded();
+    
     // Remove existing styles if present
     const existing = document.getElementById('claude-font-fix');
     const serifExisting = document.getElementById('claude-serif-restore');
@@ -259,28 +403,30 @@
     const fontFamily = getCurrentFontFamily();
     const settings = advancedSettings || defaultAdvancedSettings;
     
-    // Build CSS with advanced settings
+    // Build CSS with advanced settings and higher specificity
     const style = document.createElement('style');
     style.id = 'claude-font-fix';
     
     let cssRules = `
-      /* Override Claude's CSS variables */
-      :root {
+      /* Override Claude's CSS variables with high specificity */
+      html:root {
         --font-claude-response: ${fontFamily} !important;
       }
       
-      /* Base font targeting with CSS font-size reset strategy */
-      .prose, .prose *,
-      .font-serif, .font-claude-response,
-      [class*="prose"], [class*="font-serif"], [class*="claude-response"],
-      .conversation-turn, .message-content, .markdown-content,
-      div[data-testid*="conversation"], div[data-testid*="message"],
-      p, h1, h2, h3, h4, h5, h6, li, blockquote, span, div {
-        font-family: ${fontFamily} !important;`;
+      /* High-specificity font targeting with comprehensive selectors */
+      html body .prose, html body .prose *,
+      html body .font-serif, html body .font-claude-response,
+      html body [class*="prose"], html body [class*="font-serif"], html body [class*="claude-response"],
+      html body .conversation-turn, html body .message-content, html body .markdown-content,
+      html body div[data-testid*="conversation"], html body div[data-testid*="message"],
+      html body p, html body h1, html body h2, html body h3, html body h4, html body h5, html body h6, 
+      html body li, html body blockquote, html body span, html body div {
+        font-family: ${fontFamily} !important;
+        font-feature-settings: normal !important;
+        font-variant-ligatures: normal !important;`;
     
     // Add typography settings if not default
     if (settings.fontSize !== 1.0) {
-      // Use rem units instead of em to prevent compounding
       cssRules += `\n        font-size: ${settings.fontSize}rem !important;`;
       if (CONFIG && CONFIG.DEBUG) {
         console.log(`Claude Font Fix: Applying font size ${settings.fontSize}rem (${Math.round(settings.fontSize * 100)}%)`);
@@ -297,19 +443,45 @@
     }
     
     cssRules += `\n      }`;
+    
+    // Additional specific targeting for Claude's dynamic content
     cssRules += `\n      
-      /* High specificity targeting */
-      body * {
+      /* Ultra-high specificity for dynamic content */
+      html body * {
         font-family: ${fontFamily} !important;
+      }
+      
+      /* Special handling for web fonts */`;
+    
+    const fontCategory = identifyFontFamilyCached(fontFamily);
+    if (fontCategory === 'lexend') {
+      cssRules += `\n      
+      html body * {
+        font-feature-settings: "kern" 1, "liga" 1 !important;
+        font-variant-ligatures: common-ligatures !important;
+        text-rendering: optimizeLegibility !important;
       }`;
+    } else if (fontCategory === 'atkinson') {
+      cssRules += `\n      
+      html body * {
+        font-feature-settings: "kern" 1 !important;
+        text-rendering: optimizeLegibility !important;
+      }`;
+    } else if (fontCategory === 'opendyslexic') {
+      cssRules += `\n      
+      html body * {
+        font-feature-settings: normal !important;
+        text-rendering: optimizeSpeed !important;
+      }`;
+    }
     
     // Conditional targeting based on settings
     if (!settings.targetMath) {
       cssRules += `\n      
       /* Exclude mathematical content */
-      .katex, .katex *, 
-      [class*="math"], [class*="latex"],
-      mjx-container, mjx-container * {
+      html body .katex, html body .katex *, 
+      html body [class*="math"], html body [class*="latex"],
+      html body mjx-container, html body mjx-container * {
         font-family: initial !important;
       }`;
     }
@@ -317,10 +489,10 @@
     if (!settings.targetCode) {
       cssRules += `\n      
       /* Exclude code content */
-      pre, pre *, code, code *,
-      [class*="code"], [class*="monospace"],
-      .hljs, .hljs *,
-      tt, tt * {
+      html body pre, html body pre *, html body code, html body code *,
+      html body [class*="code"], html body [class*="monospace"],
+      html body .hljs, html body .hljs *,
+      html body tt, html body tt * {
         font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, 'Courier New', monospace !important;
       }`;
     }
@@ -328,10 +500,10 @@
     if (settings.preserveEmphasis) {
       cssRules += `\n      
       /* Preserve text emphasis */
-      strong, b {
+      html body strong, html body b {
         font-weight: bold !important;
       }
-      em, i {
+      html body em, html body i {
         font-style: italic !important;
       }`;
     }
@@ -342,6 +514,7 @@
     // Debug: Log the complete CSS being applied
     if (CONFIG && CONFIG.DEBUG) {
       console.log('Claude Font Fix: Complete CSS applied:', cssRules);
+      console.log('Claude Font Fix: Font family being applied:', fontFamily);
     }
     
     // Also apply to any existing elements immediately
@@ -654,14 +827,18 @@
         cacheHitRate: performanceMetrics.cacheHits > 0 ? 
           ((performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) * 100).toFixed(1) + '%' : '0%',
         cacheSize: elementCache.size,
+        functionCacheSize: fontFamilyCache.size,
         originalStylesTracked: originalStyles.size
       });
     }
   }
   
   // Initialize when DOM is ready
-  function init() {
+  async function init() {
     debugLog('Claude Font Fix: Initializing with performance optimizations...');
+    
+    // Ensure fonts are loaded before applying
+    await ensureFontsLoaded();
     
     // Load settings and apply fonts
     checkEnabled();

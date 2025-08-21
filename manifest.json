@@ -2,18 +2,38 @@
   "manifest_version": 3,
   "name": "Claude Font Fix",
   "version": "1.0",
-  "description": "Forces Claude.ai to use sans-serif fonts instead of serif fonts in reply messages",
+  "description": "Transform Claude.ai with dyslexic-friendly fonts for enhanced accessibility and readability. Features OpenDyslexic, Atkinson Hyperlegible, and Lexend fonts.",
   "permissions": [
     "storage",
     "activeTab"
   ],
   "host_permissions": [
-    "https://claude.ai/*"
+    "https://claude.ai/*",
+    "https://fonts.googleapis.com/*",
+    "https://fonts.gstatic.com/*",
+    "https://cdn.jsdelivr.net/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*.woff2",
+        "fonts/*.woff"
+      ],
+      "matches": [
+        "https://claude.ai/*"
+      ]
+    }
   ],
   "content_scripts": [
     {
       "matches": [
         "https://claude.ai/*"
+      ],
+      "css": [
+        "fonts.css"
       ],
       "js": [
         "config.js",

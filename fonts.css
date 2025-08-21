@@ -1,0 +1,92 @@
+/* Web font imports for dyslexic-friendly fonts that may not be locally installed */
+/* Note: External fonts are loaded securely via CSP-compliant methods */
+
+/* OpenDyslexic fonts with local hosting priority and secure CDN fallbacks */
+/* OpenDyslexic fonts with CDN hosting (local hosting disabled temporarily due to missing font files) */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: local('OpenDyslexic'), 
+       local('OpenDyslexic-Regular'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: local('OpenDyslexic Bold'), 
+       local('OpenDyslexic-Bold'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-Bold.woff2') format('woff2'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: local('OpenDyslexic Italic'), 
+       local('OpenDyslexic-Italic'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-Italic.woff2') format('woff2'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-Italic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: local('OpenDyslexic Bold Italic'), 
+       local('OpenDyslexic-BoldItalic'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2'),
+       url('https://opendyslexic.org/files/fonts/OpenDyslexic-BoldItalic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Force font loading and ensure proper display */
+.claude-font-fix-lexend,
+.claude-font-fix-lexend * {
+  font-family: "Lexend", "Lexend Deca", sans-serif !important;
+  font-feature-settings: normal !important;
+  font-variant-ligatures: normal !important;
+}
+
+.claude-font-fix-opendyslexic,
+.claude-font-fix-opendyslexic * {
+  font-family: "OpenDyslexic", "Comic Sans MS", "Comic Neue", Verdana, Arial, sans-serif !important;
+  font-feature-settings: normal !important;
+}
+
+.claude-font-fix-atkinson,
+.claude-font-fix-atkinson * {
+  font-family: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-feature-settings: normal !important;
+}
+
+.claude-font-fix-comic,
+.claude-font-fix-comic * {
+  font-family: "Comic Sans MS", "Comic Neue", cursive, sans-serif !important;
+  font-feature-settings: normal !important;
+}
+
+/* High-specificity rules to ensure fonts are applied */
+html body .prose *,
+html body .font-serif *,
+html body .font-claude-response *,
+html body [class*="prose"] *,
+html body [class*="font-serif"] *,
+html body [class*="claude-response"] * {
+  font-feature-settings: inherit !important;
+  font-variant-ligatures: inherit !important;
+}
+
+/* Preload hint for faster font loading */
+@media (prefers-reduced-motion: no-preference) {
+  .claude-font-fix-loading {
+    font-display: swap;
+  }
+}

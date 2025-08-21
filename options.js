@@ -33,13 +33,18 @@ document.addEventListener('DOMContentLoaded', function() {
     preserveEmphasis: true
   };
 
-  // Font family configurations
+  // Font family configurations with improved Lexend handling
   const fontConfigs = {
     system: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
     inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     roboto: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
     segoe: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
     sf: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif',
+    opendyslexic: '"OpenDyslexic", "Comic Sans MS", "Comic Neue", Verdana, Arial, sans-serif',
+    atkinson: '"Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    lexend: '"Lexend", "Lexend Deca", sans-serif',
+    sylexiad: '"Sylexiad Sans", "OpenDyslexic", "Comic Sans MS", Verdana, Arial, sans-serif',
+    comic: '"Comic Sans MS", "Comic Neue", cursive, sans-serif',
     custom: ''
   };
 
@@ -156,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return fontConfigs[selectedFont] || fontConfigs.system;
   }
 
-  // Update font preview
+  // Update font preview with font loading detection
   function updatePreview() {
     const fontFamily = getCurrentFontFamily();
     const fontSize = fontSizeSlider.value;
@@ -170,15 +175,121 @@ document.addEventListener('DOMContentLoaded', function() {
       fontSize: fontSize + 'em',
       lineHeight: lineHeight,
       letterSpacing: letterSpacing + 'px',
-      transition: enableTransitions ? 'all 0.3s ease' : 'none'
+      transition: enableTransitions ? 'all 0.3s ease' : 'none',
+      fontFeatureSettings: 'normal',
+      fontVariantLigatures: 'normal'
     };
 
     Object.assign(fontPreview.style, previewStyles);
 
-    // Update preview text to show current settings
+    // Update preview text to show current settings and font detection
     const previewText = fontPreview.querySelector('p:first-of-type');
     if (previewText) {
-      previewText.innerHTML = `<strong>Font:</strong> ${getFontDisplayName()} | <strong>Size:</strong> ${Math.round(fontSize * 100)}% | <strong>Line Height:</strong> ${lineHeight}`;
+      const fontDisplayName = getFontDisplayName();
+      const detectionResult = detectActualFont(fontPreview);
+      
+      let fontInfo = `<strong>Font:</strong> ${fontDisplayName} | <strong>Size:</strong> ${Math.round(fontSize * 100)}% | <strong>Line Height:</strong> ${lineHeight}`;
+      
+      // Add font detection info for debugging
+      if (detectionResult && detectionResult.font) {
+        if (detectionResult.loaded && detectionResult.font !== 'Fallback font') {
+          fontInfo += `<br><small style="color: #28a745;">✓ ${detectionResult.font} loaded successfully (${detectionResult.method})</small>`;
+        } else if (!detectionResult.loaded) {
+          fontInfo += `<br><small style="color: #dc3545;">⚠ Web font may not be loaded - using fallback (${detectionResult.method})</small>`;
+        }
+        
+        // Add debug info if available
+        if (detectionResult.debug && CONFIG && CONFIG.DEBUG) {
+          fontInfo += `<br><small style="color: #6c757d;">Debug: ${JSON.stringify(detectionResult.debug)}</small>`;
+        }
+      }
+      
+      previewText.innerHTML = fontInfo;
+    }
+  }
+
+  // Enhanced font detection with Font Loading API and improved canvas fallback
+  function detectActualFont(element) {
+    try {
+      const computedStyle = window.getComputedStyle(element);
+      const fontFamily = computedStyle.fontFamily;
+      const fontSize = computedStyle.fontSize || "16px";
+      const primaryFont = fontFamily.split(',')[0].replace(/['"]/g, '').trim();
+      
+      // Use Font Loading API if available (preferred method)
+      if (document.fonts && document.fonts.check) {
+        try {
+          if (document.fonts.check(`${fontSize} "${primaryFont}"`)) {
+            return {
+              font: primaryFont,
+              loaded: true,
+              method: 'Font Loading API'
+            };
+          } else {
+            return {
+              font: 'Fallback font',
+              loaded: false,
+              method: 'Font Loading API'
+            };
+          }
+        } catch (error) {
+          debugLog('Font Loading API failed:', error);
+        }
+      }
+      
+      // Fallback to canvas detection (less reliable but widely supported)
+      return canvasBasedDetection(element, fontFamily, fontSize, primaryFont);
+    } catch (e) {
+      return {
+        font: 'Detection failed',
+        loaded: false,
+        method: 'Error',
+        error: e.message
+      };
+    }
+  }
+
+  // Canvas-based font detection with improved reliability
+  function canvasBasedDetection(element, fontFamily, fontSize, primaryFont) {
+    try {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const testText = 'The quick brown fox jumps over the lazy dog 1234567890';
+      const fallbackFont = 'monospace';
+      
+      // Test with specified font
+      context.font = `${fontSize} ${fontFamily}`;
+      const testWidth = context.measureText(testText).width;
+      
+      // Test with fallback
+      context.font = `${fontSize} ${fallbackFont}`;
+      const fallbackWidth = context.measureText(testText).width;
+      
+      // Use configurable relative threshold based on font characteristics
+      const detectionThreshold = getDetectionThreshold(fontFamily);
+      const threshold = Math.max(1, Math.abs(fallbackWidth * detectionThreshold));
+      const isLoaded = Math.abs(testWidth - fallbackWidth) > threshold;
+      
+      return {
+        font: isLoaded ? primaryFont : 'Fallback font',
+        loaded: isLoaded,
+        method: 'Canvas detection',
+        debug: {
+          testWidth,
+          fallbackWidth,
+          difference: Math.abs(testWidth - fallbackWidth),
+          threshold,
+          detectionThreshold: detectionThreshold,
+          fontFamily: fontFamily
+        }
+      };
+    } catch (error) {
+      return {
+        font: 'Canvas detection failed',
+        loaded: false,
+        method: 'Canvas Error',
+        error: error.message
+      };
     }
   }
 
