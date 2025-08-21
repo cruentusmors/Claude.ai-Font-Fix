@@ -16,6 +16,17 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*.woff2",
+        "fonts/*.woff"
+      ],
+      "matches": [
+        "https://claude.ai/*"
+      ]
+    }
+  ],
   "content_scripts": [
     {
       "matches": [

@@ -164,6 +164,30 @@
     return 'system';
   }
 
+  // Cached version of identifyFontFamily for performance optimization
+  const fontFamilyCache = new Map();
+  function identifyFontFamilyCached(fontFamily) {
+    // Check cache first
+    if (fontFamilyCache.has(fontFamily)) {
+      return fontFamilyCache.get(fontFamily);
+    }
+    
+    // Compute and cache result
+    const result = identifyFontFamily(fontFamily);
+    fontFamilyCache.set(fontFamily, result);
+    
+    // Prevent cache from growing too large (memory management)
+    if (fontFamilyCache.size > 100) {
+      const firstKey = fontFamilyCache.keys().next().value;
+      fontFamilyCache.delete(firstKey);
+      if (CONFIG.DEBUG) {
+        debugLog('Font family cache size limit reached, removed oldest entry');
+      }
+    }
+    
+    return result;
+  }
+
   // Get current font family based on advanced settings
   function getCurrentFontFamily() {
     if (!advancedSettings) return fontConfigs.system;
@@ -429,7 +453,7 @@
       
       /* Special handling for web fonts */`;
     
-    const fontCategory = identifyFontFamily(fontFamily);
+    const fontCategory = identifyFontFamilyCached(fontFamily);
     if (fontCategory === 'lexend') {
       cssRules += `\n      
       html body * {
@@ -803,6 +827,7 @@
         cacheHitRate: performanceMetrics.cacheHits > 0 ? 
           ((performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) * 100).toFixed(1) + '%' : '0%',
         cacheSize: elementCache.size,
+        functionCacheSize: fontFamilyCache.size,
         originalStylesTracked: originalStyles.size
       });
     }

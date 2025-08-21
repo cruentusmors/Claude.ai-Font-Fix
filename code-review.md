@@ -3,15 +3,17 @@
 Pull Request Overview
 ---------------------
 
-This PR enhances the Claude Font Fix extension with comprehensive accessibility features, specifically adding dyslexic-friendly fonts and improved customization options for users with visual processing differences.
+This PR transforms the Claude Font Fix extension into a comprehensive accessibility tool by integrating dyslexic-friendly fonts and enhanced customization features. The changes focus on improving readability for users with dyslexia and visual processing differences while maintaining the extension's core functionality.
 
--   Introduces 5 new dyslexic-friendly fonts including OpenDyslexic, Atkinson Hyperlegible, and Lexend
--   Implements web font loading detection with fallback mechanisms and debug tools
--   Updates documentation and store descriptions to emphasize accessibility features
+Key changes include:
+
+-   Addition of 5 specialized accessibility fonts (OpenDyslexic, Atkinson Hyperlegible, Lexend, Sylexiad Sans, Comic Sans MS)
+-   Implementation of secure web font loading with CSP compliance and fallback mechanisms
+-   Enhanced font detection system using Font Loading API with canvas-based fallback
 
 ### Reviewed Changes
 
-Copilot reviewed 9 out of 9 changed files in this pull request and generated 5 comments.
+Copilot reviewed 12 out of 12 changed files in this pull request and generated 4 comments.
 
 Show a summary per file
 
@@ -25,7 +27,7 @@ Updates marketing copy to emphasize dyslexic-friendly fonts and accessibility fe
 
 readme.md
 
-Adds comprehensive documentation for new accessibility fonts and web font loading
+Adds comprehensive documentation for new accessibility fonts and web font loading security
 
 popup.html
 
@@ -33,7 +35,7 @@ Updates extension description to mention dyslexic-friendly fonts
 
 options.js
 
-Adds new font configurations and font loading detection functionality
+Adds new font configurations and enhanced font loading detection functionality
 
 options.html
 
@@ -41,11 +43,11 @@ Adds accessibility information section and dyslexic-friendly font options
 
 manifest.json
 
-Updates description and adds fonts.css to content scripts
+Updates description, adds CSP policy, and includes fonts.css in content scripts
 
 fonts.css
 
-New file containing web font imports and CSS for accessibility fonts
+New file containing secure web font imports and CSS for accessibility fonts
 
 font-test.html
 
@@ -59,74 +61,10 @@ Tip: Customize your code reviews with copilot-instructions.md. Create the file o
 
 In content.js:
 
-> +    try {
-+      // Check if document.fonts API is available
-+      if (document.fonts && document.fonts.ready) {
+> +      if (document.fonts && document.fonts.ready) {
 +        await document.fonts.ready;
 +
-+        // Check for specific fonts
-+        const fontChecks = [
-+          new FontFace('Lexend', 'url(https://fonts.gstatic.com/s/lexend/v18/wlptgwvFAVdoq2_v9KXZdw.woff2)').load(),
-+          new FontFace('Atkinson Hyperlegible', 'url(https://fonts.gstatic.com/s/atkinsonhyperlegible/v11/9Bt73C1KxNDXMspQ1lPyU89-1h6ONRlW45GE5ZgpewSSbQ.woff2)').load()
-+        ];
-+
-+        await Promise.allSettled(fontChecks);
-+
-+        // Wait a bit more for fonts to be applied
-+        await new Promise(resolve => setTimeout(resolve, 100));
-+
-
-Hard-coded external font URLs pose a security risk and may break if Google changes their CDN structure. Consider using the Google Fonts API or implementing proper error handling with fallback URLs.
-
-⬇️ Suggested change
-
--
-+        // Inject Google Fonts API link if not already present
-+        const fontLinkId = 'claude-font-fix-google-fonts';
-+        if (!document.getElementById(fontLinkId)) {
-+          const link = document.createElement('link');
-+          link.id = fontLinkId;
-+          link.rel = 'stylesheet';
-+          link.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap';
-+          document.head.appendChild(link);
-+        }
 +        // Wait for fonts to be loaded by the browser
-+
-+
-
-In fonts.css:
-
-> +
-+/* Lexend family - proven to improve reading comprehension */
-+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
-+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
-+
-+/* Atkinson Hyperlegible - designed for visual accessibility */
-+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-+
-+/* Comic Neue - modern alternative to Comic Sans MS */
-+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
-+
-+/* OpenDyslexic fonts (fallback to CDN if not locally installed) */
-+@font-face {
-+  font-family: 'OpenDyslexic';
-+  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
-+       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff') format('woff');
-
-Loading fonts from external CDN (jsDelivr) without integrity checks poses a security risk. Consider adding subresource integrity (SRI) hashes or hosting fonts locally to prevent potential supply chain attacks.
-
-⬇️ Suggested change
-
--       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff') format('woff');
-+  src: url('./fonts/OpenDyslexic-Regular.woff2') format('woff2'),
-+       url('./fonts/OpenDyslexic-Regular.woff') format('woff');
-
-In content.js:
-
-> +
-+        await Promise.allSettled(fontChecks);
-+
-+        // Wait a bit more for fonts to be applied
 +        await new Promise(resolve => setTimeout(resolve, 100));
 +
 +        fontsLoaded = true;
@@ -137,101 +75,72 @@ In content.js:
 +      debugLog('Claude Font Fix: Font loading detection failed, proceeding anyway:', error);
 +    }
 +
-+    // Fallback: assume fonts are loaded after a reasonable delay
-+    setTimeout(() => { fontsLoaded = true; }, 2000);
++    // Fallback: assume fonts are loaded after adaptive delay
++    const timeout = getAdaptiveTimeout();
 
-The hard-coded 2-second timeout is a magic number that could cause issues on slow networks or fast networks alike. Consider making this configurable or using a more dynamic approach based on actual loading conditions.
+The adaptive timeout function is called but not awaited, which means the timeout value may not be properly calculated before use. Consider making this function synchronous or properly handling the async behavior.
+
+In fonts.css:
+
+> @@ -0,0 +1,91 @@
++/* Web font imports for dyslexic-friendly fonts that may not be locally installed */
++/* Note: External fonts are loaded securely via CSP-compliant methods */
++
++/* OpenDyslexic fonts with fallback to local installation */
++@font-face {
++  font-family: 'OpenDyslexic';
++  src: local('OpenDyslexic'),
++       local('OpenDyslexic-Regular'),
++       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
++       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff') format('woff');
+
+Loading fonts from external CDN without integrity checks poses a security risk. Consider adding subresource integrity (SRI) hashes or implementing additional validation to prevent potential supply chain attacks.
 
 ⬇️ Suggested change
 
--    setTimeout(() => { fontsLoaded = true; }, 2000);
-+    const timeout = (advancedSettings && typeof advancedSettings.fontLoadTimeout === 'number')
-+      ? advancedSettings.fontLoadTimeout
-+      : defaultAdvancedSettings.fontLoadTimeout;
-+    setTimeout(() => { fontsLoaded = true; }, timeout);
+-       url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/fonts/OpenDyslexic-Regular.woff') format('woff');
++       url('/fonts/opendyslexic/OpenDyslexic-Regular.woff2') format('woff2'),
++       url('/fonts/opendyslexic/OpenDyslexic-Regular.woff') format('woff');
+
+In options.js:
+
+> +    try {
++      const canvas = document.createElement('canvas');
++      const context = canvas.getContext('2d');
++      const testText = 'The quick brown fox jumps over the lazy dog 1234567890';
++      const fallbackFont = 'monospace';
++
++      // Test with specified font
++      context.font = `${fontSize} ${fontFamily}`;
++      const testWidth = context.measureText(testText).width;
++
++      // Test with fallback
++      context.font = `${fontSize} ${fallbackFont}`;
++      const fallbackWidth = context.measureText(testText).width;
++
++      // Use relative threshold instead of absolute pixel difference
++      const threshold = Math.max(1, Math.abs(fallbackWidth * 0.05)); // 5% difference
+
+[nitpick] The 5% threshold is a magic number that may not work reliably across different fonts, browsers, or rendering conditions. Consider making this threshold configurable or implementing a more robust font detection method.
+
+⬇️ Suggested change
+
+-      const threshold = Math.max(1, Math.abs(fallbackWidth * 0.05)); // 5% difference
++      // Use configurable relative threshold instead of absolute pixel difference
++      const threshold = Math.max(1, Math.abs(fallbackWidth * FONT_DETECTION_THRESHOLD)); // Default: 5% difference
 
 In content.js:
 
 >          font-family: ${fontFamily} !important;
 +      }
 +
-+      /* Special handling for Lexend font */`;
++      /* Special handling for web fonts */`;
 +
-+    if (fontFamily.includes('Lexend')) {
++    const fontCategory = identifyFontFamily(fontFamily);
 
-String matching for font detection is fragile and could break if font names change. Consider using a more robust font identification method or storing font metadata separately.
+The identifyFontFamily function is called every time applyFontFix runs, which could be frequently. Consider caching the result based on the fontFamily string to avoid repeated parsing and Set lookups.
 
 ⬇️ Suggested change
 
--    if (fontFamily.includes('Lexend')) {
-+    // Robust Lexend font detection
-+    const LEXEND_FONT_NAMES = new Set([
-+      'Lexend',
-+      'Lexend Deca',
-+      'Lexend Exa',
-+      'Lexend Giga',
-+      'Lexend Mega',
-+      'Lexend Peta',
-+      'Lexend Tera',
-+      'Lexend Zetta',
-+      'Lexend-Regular'
-+    ]);
-+    // fontFamily may be a comma-separated list; check each font name
-+    const fontNames = fontFamily.split(',').map(f => f.trim().replace(/^["']|["']$/g, ''));
-+    const isLexend = fontNames.some(name => LEXEND_FONT_NAMES.has(name));
-+    if (isLexend) {
-
-In options.js:
-
-> +      // Set font from element
-+      const computedStyle = window.getComputedStyle(element);
-+      const fontFamily = computedStyle.fontFamily;
-+
-+      // Test if the specified font is actually being used
-+      context.font = `16px ${fontFamily}`;
-+      const testWidth = context.measureText(testText).width;
-+
-+      context.font = `16px ${fallbackFont}`;
-+      const fallbackWidth = context.measureText(testText).width;
-+
-+      // If widths are significantly different, the font is probably loaded
-+      if (Math.abs(testWidth - fallbackWidth) > 1) {
-+        return fontFamily.split(',')[0].replace(/['"]/g, '').trim();
-+      } else {
-+        return 'Fallback font (web font may not be loaded)';
-
-The canvas-based font detection logic uses a magic number (1 pixel difference) that may not be reliable across different browsers, zoom levels, or font rendering engines. Consider using the Font Loading API when available or implementing more robust detection.
-
-⬇️ Suggested change
-
--        return 'Fallback font (web font may not be loaded)';
-+      const computedStyle = window.getComputedStyle(element);
-+      const fontFamily = computedStyle.fontFamily;
-+      const fontSize = computedStyle.fontSize || "16px";
-+      const primaryFont = fontFamily.split(',')[0].replace(/['"]/g, '').trim();
-+
-+      // Use the Font Loading API if available
-+      if (document.fonts && document.fonts.check) {
-+        // Check if the primary font is loaded
-+        if (document.fonts.check(`${fontSize} "${primaryFont}"`)) {
-+          return primaryFont;
-+        } else {
-+          // Optionally, try to load the font (async, but we keep this sync for compatibility)
-+          return 'Fallback font (web font may not be loaded)';
-+        }
-+      } else {
-+        // Fallback: canvas-based detection (less reliable)
-+        const canvas = document.createElement('canvas');
-+        const context = canvas.getContext('2d');
-+        const testText = 'The quick brown fox jumps over the lazy dog';
-+        const fallbackFont = 'monospace';
-+        context.font = `${fontSize} ${fontFamily}`;
-+        const testWidth = context.measureText(testText).width;
-+        context.font = `${fontSize} ${fallbackFont}`;
-+        const fallbackWidth = context.measureText(testText).width;
-+        // If widths are different, the font is probably loaded (still not robust)
-+        if (Math.abs(testWidth - fallbackWidth) > 0.5) {
-+          return primaryFont;
-+        } else {
-+          return 'Fallback font (web font may not be loaded)';
-+        }
+-    const fontCategory = identifyFontFamily(fontFamily);
++    const fontCategory = identifyFontFamilyCached(fontFamily);

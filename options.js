@@ -265,8 +265,9 @@ document.addEventListener('DOMContentLoaded', function() {
       context.font = `${fontSize} ${fallbackFont}`;
       const fallbackWidth = context.measureText(testText).width;
       
-      // Use relative threshold instead of absolute pixel difference
-      const threshold = Math.max(1, Math.abs(fallbackWidth * 0.05)); // 5% difference
+      // Use configurable relative threshold based on font characteristics
+      const detectionThreshold = getDetectionThreshold(fontFamily);
+      const threshold = Math.max(1, Math.abs(fallbackWidth * detectionThreshold));
       const isLoaded = Math.abs(testWidth - fallbackWidth) > threshold;
       
       return {
@@ -277,7 +278,9 @@ document.addEventListener('DOMContentLoaded', function() {
           testWidth,
           fallbackWidth,
           difference: Math.abs(testWidth - fallbackWidth),
-          threshold
+          threshold,
+          detectionThreshold: detectionThreshold,
+          fontFamily: fontFamily
         }
       };
     } catch (error) {
